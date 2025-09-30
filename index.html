@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THC Farmer - Virtual Cannabis Farm Simulator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Header with game stats -->
+        <header class="game-header">
+            <div class="logo">
+                <h1>🌿 THC Farmer</h1>
+            </div>
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span class="stat-label">Cash:</span>
+                    <span id="cash" class="stat-value">$10,000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Daily P/L:</span>
+                    <span id="daily-profit" class="stat-value profit">+$0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Plants:</span>
+                    <span id="plant-count" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Day:</span>
+                    <span id="game-day" class="stat-value">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main game area -->
+        <main class="game-main">
+            <!-- Farm area -->
+            <div class="farm-container">
+                <div id="farm-grid" class="farm-grid">
+                    <!-- Farm grid will be generated dynamically -->
+                </div>
+                
+                <!-- Environmental controls -->
+                <div class="environmental-panel">
+                    <h3>Environment</h3>
+                    <div class="env-stats">
+                        <div class="env-stat">
+                            <span>🌡️ Temp:</span>
+                            <span id="temperature">72°F</span>
+                        </div>
+                        <div class="env-stat">
+                            <span>💧 Humidity:</span>
+                            <span id="humidity">45%</span>
+                        </div>
+                        <div class="env-stat">
+                            <span>💡 Light:</span>
+                            <span id="light-level">60%</span>
+                        </div>
+                        <div class="env-stat">
+                            <span>🌬️ CO₂:</span>
+                            <span id="co2-level">400ppm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side panels -->
+            <div class="side-panels">
+                <!-- Equipment shop -->
+                <div class="equipment-shop">
+                    <h3>🛒 Equipment Shop</h3>
+                    <div id="equipment-list" class="equipment-list">
+                        <!-- Equipment items will be generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Plant details -->
+                <div class="plant-details">
+                    <h3>🌱 Plant Details</h3>
+                    <div id="selected-plant-info" class="plant-info">
+                        <p>Select a plant to view details</p>
+                    </div>
+                </div>
+
+                <!-- Financial overview -->
+                <div class="financial-panel">
+                    <h3>💰 Finances</h3>
+                    <div class="finance-details">
+                        <div class="finance-item">
+                            <span>Revenue:</span>
+                            <span id="total-revenue" class="green">$0</span>
+                        </div>
+                        <div class="finance-item">
+                            <span>Electricity:</span>
+                            <span id="electricity-cost" class="red">-$0</span>
+                        </div>
+                        <div class="finance-item">
+                            <span>Equipment:</span>
+                            <span id="equipment-cost" class="red">-$0</span>
+                        </div>
+                        <div class="finance-item">
+                            <span>Seeds/Supplies:</span>
+                            <span id="supplies-cost" class="red">-$0</span>
+                        </div>
+                        <hr>
+                        <div class="finance-item total">
+                            <span>Net Profit:</span>
+                            <span id="net-profit">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Game controls -->
+        <div class="game-controls">
+            <button id="play-pause-btn" class="control-btn">⏸️ Pause</button>
+            <button id="speed-btn" class="control-btn">🕐 1x</button>
+            <button id="plant-seed-btn" class="control-btn">🌱 Plant Seed ($50)</button>
+            <button id="harvest-all-btn" class="control-btn">🌾 Harvest Ready</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="plant-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Plant Management</h3>
+            <div id="modal-plant-details"></div>
+            <div class="modal-actions">
+                <button id="water-plant-btn" class="action-btn">💧 Water ($5)</button>
+                <button id="add-nutrients-btn" class="action-btn">🧪 Add Nutrients ($10)</button>
+                <button id="harvest-plant-btn" class="action-btn">🌾 Harvest</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+    <script src="js/plant.js"></script>
+    <script src="js/equipment.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>

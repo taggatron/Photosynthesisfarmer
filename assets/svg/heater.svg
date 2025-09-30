@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="heaterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF7043"/>
+      <stop offset="50%" style="stop-color:#FF5722"/>
+      <stop offset="100%" style="stop-color:#D84315"/>
+    </linearGradient>
+    <radialGradient id="heatGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FF5722" stop-opacity="0.8"/>
+      <stop offset="70%" style="stop-color:#FF8A65" stop-opacity="0.4"/>
+      <stop offset="100%" style="stop-color:#FFAB91" stop-opacity="0.1"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Heater body -->
+  <rect x="30" y="40" width="40" height="35" fill="url(#heaterGradient)" rx="5"/>
+  
+  <!-- Control panel -->
+  <rect x="32" y="42" width="36" height="8" fill="#BF360C" rx="2"/>
+  
+  <!-- Display -->
+  <rect x="34" y="44" width="12" height="4" fill="#000000" rx="1"/>
+  <text x="40" y="47.5" font-family="monospace" font-size="2" fill="#FF5722" text-anchor="middle">72°</text>
+  
+  <!-- Control knobs -->
+  <circle cx="52" cy="46" r="2" fill="#424242"/>
+  <circle cx="58" cy="46" r="2" fill="#424242"/>
+  <circle cx="64" cy="46" r="2" fill="#424242"/>
+  
+  <!-- Heating element grilles -->
+  <g stroke="#D84315" stroke-width="0.8" fill="none">
+    <line x1="33" y1="55" x2="67" y2="55"/>
+    <line x1="33" y1="58" x2="67" y2="58"/>
+    <line x1="33" y1="61" x2="67" y2="61"/>
+    <line x1="33" y1="64" x2="67" y2="64"/>
+    <line x1="33" y1="67" x2="67" y2="67"/>
+    <line x1="33" y1="70" x2="67" y2="70"/>
+  </g>
+  
+  <!-- Heat waves -->
+  <g stroke="#FF8A65" stroke-width="1" fill="none" opacity="0.7">
+    <path d="M 35,30 Q 40,25 45,30 Q 50,35 55,30 Q 60,25 65,30" stroke-dasharray="2,2">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-5; 0,0" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 38,35 Q 42,30 48,35 Q 52,40 58,35 Q 62,30 68,35" stroke-dasharray="2,2">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-3; 0,0" dur="1.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Power cord -->
+  <line x1="70" y1="65" x2="85" y2="70" stroke="#212121" stroke-width="2"/>
+  
+  <!-- Base/feet -->
+  <rect x="32" y="73" width="4" height="2" fill="#424242" rx="1"/>
+  <rect x="64" y="73" width="4" height="2" fill="#424242" rx="1"/>
+</svg>
