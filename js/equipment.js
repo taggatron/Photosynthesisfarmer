@@ -510,11 +510,13 @@ class EquipmentManager {
     dailyUpdate(gameDay) {
         let totalOperatingCost = 0;
         let totalPowerUsage = 0;
+        const breakdown = [];
         
         this.equipment.forEach(equipment => {
             const costs = equipment.dailyUpdate(gameDay);
             totalOperatingCost += costs.operatingCost;
             totalPowerUsage += costs.powerUsage;
+            breakdown.push({ type: equipment.type, operatingCost: costs.operatingCost, isActive: equipment.isActive });
         });
         
         this.totalOperatingCosts = totalOperatingCost;
@@ -526,7 +528,8 @@ class EquipmentManager {
         return {
             operatingCosts: totalOperatingCost,
             electricityCost: electricityCost,
-            totalPowerUsage: totalPowerUsage
+            totalPowerUsage: totalPowerUsage,
+            breakdown
         };
     }
     

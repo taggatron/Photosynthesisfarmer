@@ -213,6 +213,12 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
+/* Photosynthesis summary */
+#photosynthesis-panel .ps-factor { display:flex; justify-content:space-between; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px; }
+#photosynthesis-panel table td, #photosynthesis-panel table th { padding:2px 4px; border-bottom:1px solid rgba(255,255,255,0.1); }
+#photosynthesis-panel table tr:last-child td { border-bottom:none; }
+#photosynthesis-panel table th { font-weight:600; }
+
 .equipment-shop h3,
 .plant-details h3,
 .financial-panel h3 {

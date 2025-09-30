@@ -26,6 +26,32 @@ class THCFarmerGame {
         this.totalEquipmentCost = 0;
         this.totalSuppliesCost = 0;
         this.previousDayStats = {};
+
+        // Equipment spending by category (installation + operating)
+        this.spendingByCategory = {
+            lighting: { install: 0, operating: 0 },
+            climate: { install: 0, operating: 0 },
+            air: { install: 0, operating: 0 },
+            co2: { install: 0, operating: 0 },
+            nutrient: { install: 0, operating: 0 },
+            automation: { install: 0, operating: 0 },
+            security: { install: 0, operating: 0 }
+        };
+        // Map equipment type -> category for spending aggregation
+        this.EQUIPMENT_CATEGORY_MAP = {
+            led_light: 'lighting',
+            hps_light: 'lighting',
+            heater: 'climate',
+            air_conditioner: 'climate',
+            ventilation_fan: 'air',
+            humidifier: 'air',
+            dehumidifier: 'air',
+            co2_generator: 'co2',
+            hydroponic_system: 'nutrient',
+            ph_controller: 'nutrient',
+            timer_system: 'automation',
+            security_camera: 'security'
+        };
         
         // Game entities
         this.plants = new Map(); // Map of position -> Plant
@@ -189,6 +215,16 @@ class THCFarmerGame {
         
         // Deduct daily costs from cash
         this.cash -= costs.electricityCost + costs.operatingCosts;
+
+        // Aggregate operating costs by category
+        if (costs.breakdown) {
+            costs.breakdown.forEach(item => {
+                const cat = this.EQUIPMENT_CATEGORY_MAP[item.type];
+                if (cat && this.spendingByCategory[cat]) {
+                    this.spendingByCategory[cat].operating += item.operatingCost;
+                }
+            });
+        }
     }
     
     calculateDailyProfit() {
@@ -284,6 +320,12 @@ class THCFarmerGame {
             // Deduct cost
             this.cash -= result.cost;
             this.totalEquipmentCost += result.cost;
+
+            // Track install spend by category
+            const cat = this.EQUIPMENT_CATEGORY_MAP[type];
+            if (cat && this.spendingByCategory[cat]) {
+                this.spendingByCategory[cat].install += result.cost;
+            }
             
             // Award experience
             this.addExperience(10);
@@ -294,6 +336,94 @@ class THCFarmerGame {
             this.ui.showNotification(result.message, 'error');
             return false;
         }
+    }
+
+    // Compute summary of photosynthesis limiting factors and spending effectiveness
+    getPhotosynthesisSummary() {
+        // Aggregate average environment
+        const env = this.getAverageEnvironment();
+        // Collect plant stats to estimate productivity potential
+        let plantCount = 0;
+        let avgHealth = 0;
+        let avgGrowth = 0;
+        this.plants.forEach(p => {
+            const d = p.getDetailedInfo();
+            plantCount++;
+            avgHealth += d.health;
+            avgGrowth += d.growth;
+        });
+        if (plantCount > 0) {
+            avgHealth /= plantCount;
+            avgGrowth /= plantCount;
+        }
+
+        // Helper to compute efficiency ratio 0-1 based on plant preference ranges
+        const factorEfficiency = (value, pref) => {
+            if (!pref) return 0;
+            if (value < pref.min || value > pref.max) return 0.2; // outside safe range
+            // Map min->0.4, optimal->1, max->0.4 using triangular function
+            if (value === pref.optimal) return 1;
+            if (value < pref.optimal) {
+                return 0.4 + 0.6 * ((value - pref.min) / (pref.optimal - pref.min));
+            } else {
+                return 0.4 + 0.6 * ((pref.max - value) / (pref.max - pref.optimal));
+            }
+        };
+
+        // Use first plant's preferences as reference (assumes same variety typical) 
+        let refPref = null;
+        for (let p of this.plants.values()) { refPref = p.preferences; break; }
+        if (!refPref) {
+            refPref = {
+                temperature: { min: 68, optimal: 75, max: 85 },
+                humidity: { min: 40, optimal: 55, max: 70 },
+                lightIntensity: { min: 30, optimal: 80, max: 100 },
+                co2Level: { min: 350, optimal: 1200, max: 1500 }
+            };
+        }
+
+        const efficiencies = {
+            light: factorEfficiency(env.lightIntensity, refPref.lightIntensity),
+            temperature: factorEfficiency(env.temperature, refPref.temperature),
+            humidity: factorEfficiency(env.humidity, refPref.humidity),
+            co2: factorEfficiency(env.co2Level, refPref.co2Level)
+        };
+
+        // Limiting factor is smallest efficiency
+        let limitingFactor = null;
+        let minVal = 999;
+        Object.entries(efficiencies).forEach(([k,v]) => { if (v < minVal) { minVal = v; limitingFactor = k; } });
+
+        // Spending effectiveness: compare category spend vs direct contributing factors
+        const categoryImpacts = {
+            lighting: 'light',
+            climate: 'temperature',
+            air: 'humidity',
+            co2: 'co2',
+            nutrient: 'growth',
+            automation: 'efficiency',
+            security: 'none'
+        };
+        const spendingSummary = Object.entries(this.spendingByCategory).map(([cat,vals]) => {
+            const total = vals.install + vals.operating;
+            const impactFactor = categoryImpacts[cat];
+            let relatedEfficiency = null;
+            if (impactFactor && efficiencies[impactFactor] !== undefined) {
+                relatedEfficiency = efficiencies[impactFactor];
+            } else if (impactFactor === 'growth') {
+                relatedEfficiency = plantCount ? avgGrowth / 100 : 0;
+            }
+            return { category: cat, install: Math.round(vals.install), operating: Math.round(vals.operating), total: Math.round(total), relatedEfficiency };
+        });
+
+        return {
+            plantCount,
+            avgHealth: Math.round(avgHealth),
+            avgGrowth: Math.round(avgGrowth),
+            efficiencies,
+            limitingFactor,
+            spendingSummary
+        };
     }
     
     removePlant(x, y) {

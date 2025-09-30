@@ -622,6 +622,7 @@ class UIManager {
     performUpdate() {
         this.updateFarmDisplay();
         this.updateStats();
+        this.updatePhotosynthesisSummary();
         
         if (this.selectedPlant && !this.selectedPlant.isDead) {
             this.updatePlantDetails(this.selectedPlant);
@@ -632,6 +633,39 @@ class UIManager {
             this.updateEquipmentShop();
             this.lastEquipmentUpdate = Date.now();
         }
+    }
+
+    updatePhotosynthesisSummary() {
+        const container = document.getElementById('photosynthesis-summary');
+        if (!container || !this.game.getPhotosynthesisSummary) return;
+        const summary = this.game.getPhotosynthesisSummary();
+        const effPct = f => (f*100).toFixed(0)+'%';
+        const factorRows = [
+            { label: 'Light', key: 'light' },
+            { label: 'Temp', key: 'temperature' },
+            { label: 'Humidity', key: 'humidity' },
+            { label: 'CO₂', key: 'co2' }
+        ].map(r => `<div class="ps-factor"><span>${r.label}:</span><span>${effPct(summary.efficiencies[r.key])}</span></div>`).join('');
+
+        const spendRows = summary.spendingSummary
+            .sort((a,b)=>b.total-a.total)
+            .map(s => {
+                const eff = s.relatedEfficiency==null?'-':effPct(s.relatedEfficiency);
+                return `<tr><td>${s.category}</td><td>£${s.install}</td><td>£${s.operating}</td><td>£${s.total}</td><td>${eff}</td></tr>`;
+            }).join('');
+
+        container.innerHTML = `
+            <div class="ps-overview">
+                <div style="margin-bottom:4px;">Plants: <strong>${summary.plantCount}</strong> | Avg Health: <strong>${summary.avgHealth}%</strong> | Growth: <strong>${summary.avgGrowth}%</strong></div>
+                <div class="ps-factors" style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;">${factorRows}</div>
+                <div style="margin-top:6px;">Limiting Factor: <strong style="color:#ffc107;">${summary.limitingFactor || 'n/a'}</strong></div>
+            </div>
+            <table style="width:100%;margin-top:6px;font-size:0.75rem;border-collapse:collapse;">
+                <thead><tr style="text-align:left;"><th>Category</th><th>Install</th><th>Op</th><th>Total</th><th>Eff</th></tr></thead>
+                <tbody>${spendRows || '<tr><td colspan=5>No spend yet</td></tr>'}</tbody>
+            </table>
+            <p style="margin-top:6px;font-size:0.7rem;opacity:0.8;">Limiting factor is the lowest efficiency; investing there may boost growth.</p>
+        `;
     }
 
     // --- Mobile / Mode Helper Methods ---
