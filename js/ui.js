@@ -166,12 +166,18 @@ class UIManager {
         const plantCount = this.game.plants.size;
         document.getElementById('plant-count').textContent = plantCount;
         
-        // Update game day
-        document.getElementById('game-day').textContent = this.game.gameDay;
+        // Update game day (display in 0.5 day increments)
+        const displayedDay = Math.round(this.game.gameDay * 2) / 2; // nearest 0.5
+        // Avoid showing .0
+        document.getElementById('game-day').textContent = (
+            displayedDay % 1 === 0 ? displayedDay.toString() : displayedDay.toFixed(1)
+        );
         
         // Update environmental stats
         const avgEnvironment = this.game.getAverageEnvironment();
-        document.getElementById('temperature').textContent = `${Math.round(avgEnvironment.temperature)}°F`;
+    // Convert internal Fahrenheit temperature to Celsius for display
+    const tempC = Math.round((avgEnvironment.temperature - 32) * 5 / 9);
+    document.getElementById('temperature').textContent = `${tempC}°C`;
         document.getElementById('humidity').textContent = `${Math.round(avgEnvironment.humidity)}%`;
         document.getElementById('light-level').textContent = `${Math.round(avgEnvironment.lightIntensity)}%`;
         document.getElementById('co2-level').textContent = `${Math.round(avgEnvironment.co2Level)}ppm`;
