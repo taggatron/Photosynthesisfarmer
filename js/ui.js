@@ -248,6 +248,33 @@ class UIManager {
         `;
     }
     
+    createModals() {
+        // Ensure plant modal exists (already in HTML). Add equipment modal if missing.
+        if (!document.getElementById('equipment-modal')) {
+            const modal = document.createElement('div');
+            modal.id = 'equipment-modal';
+            modal.className = 'modal hidden';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-btn equip-close">&times;</span>
+                    <h3>Equipment Details</h3>
+                    <div id="equipment-modal-details"></div>
+                    <div class="modal-actions">
+                        <button id="maintain-equipment-btn" class="action-btn">🔧 Maintain</button>
+                        <button id="toggle-equipment-btn" class="action-btn">⏯️ Toggle</button>
+                        <button id="remove-equipment-btn" class="action-btn">🗑️ Remove</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+        }
+        // Bind close if not already
+        const equipClose = document.querySelector('#equipment-modal .equip-close');
+        if (equipClose && !equipClose.dataset.bound) {
+            equipClose.addEventListener('click', () => this.closeEquipmentModal());
+            equipClose.dataset.bound = 'true';
+        }
+    }
+    
     // Event handlers
     bindEvents() {
         // Game control buttons
@@ -385,13 +412,40 @@ class UIManager {
     }
     
     showEquipmentModal(equipment) {
-        // Create equipment modal content
+        const modal = document.getElementById('equipment-modal');
+        if (!modal) return;
+        const container = document.getElementById('equipment-modal-details');
         const details = equipment.getDetailedInfo();
-        // Implementation for equipment modal...
+        const effectEntries = Object.entries(details.effects || {})
+            .filter(([k,v]) => typeof v === 'number')
+            .map(([k,v]) => `${k}: ${v>0?'+':''}${v}`);
+        container.innerHTML = `
+            <p><strong>Type:</strong> ${details.name}</p>
+            <p><strong>Description:</strong> ${details.description || ''}</p>
+            <p><strong>Level:</strong> ${details.level}</p>
+            <p><strong>Coverage:</strong> ${details.coverage}</p>
+            <p><strong>Durability:</strong> ${details.durability}%</p>
+            <p><strong>Status:</strong> ${details.isActive ? 'Active' : 'Inactive'}</p>
+            <p><strong>Daily Cost:</strong> $${details.dailyOperatingCost}</p>
+            <p><strong>Power Usage:</strong> ${details.powerUsage}W</p>
+            <p><strong>Effects:</strong></p>
+            <ul style="margin-left:15px;">${effectEntries.map(e => `<li>${e}</li>`).join('') || '<li>None</li>'}</ul>
+        `;
+        document.getElementById('maintain-equipment-btn').onclick = () => this.performEquipmentAction('maintain');
+        document.getElementById('toggle-equipment-btn').onclick = () => this.performEquipmentAction('toggle');
+        document.getElementById('remove-equipment-btn').onclick = () => this.performEquipmentAction('remove');
+        modal.classList.remove('hidden');
+    }
+    
+    closeEquipmentModal() {
+        const modal = document.getElementById('equipment-modal');
+        if (modal) modal.classList.add('hidden');
+        this.selectedEquipment = null;
     }
     
     closeModal() {
         document.getElementById('plant-modal').classList.add('hidden');
+        this.closeEquipmentModal();
         this.selectedPlant = null;
         this.selectedEquipment = null;
     }
@@ -438,6 +492,26 @@ class UIManager {
         
         if (action === 'harvest' && result.success) {
             this.closeModal();
+        }
+    }
+    
+    performEquipmentAction(action) {
+        if (!this.selectedEquipment) return;
+        let result;
+        switch(action) {
+            case 'maintain':
+                result = this.game.equipmentManager.maintainEquipment(this.selectedEquipment);
+                break;
+            case 'toggle':
+                result = this.game.equipmentManager.toggleEquipment(this.selectedEquipment);
+                break;
+            case 'remove':
+                result = this.game.equipmentManager.removeEquipment(this.selectedEquipment.x, this.selectedEquipment.y);
+                if (result.success) this.closeEquipmentModal();
+                break;
+        }
+        if (result) {
+            this.showNotification(result.message, result.success ? 'success' : 'error');
         }
     }
     

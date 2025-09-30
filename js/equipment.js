@@ -470,6 +470,41 @@ class EquipmentManager {
         
         return effects;
     }
+
+    // Compatibility overload allowing overrideRadius (API used elsewhere)
+    calculateEnvironmentalEffects(x, y, radius = 2, override) {
+        // If override passed as third arg in old signature, shift
+        if (typeof radius === 'number' && override !== undefined) {
+            radius = override; // maintain backwards compatibility with previous call style
+        }
+        return this._calculateEnvironmentalEffectsInternal(x, y, radius);
+    }
+
+    _calculateEnvironmentalEffectsInternal(x, y, radius) {
+        const effects = {
+            lightIntensity: 0,
+            temperature: 0,
+            humidity: 0,
+            co2Level: 0,
+            nutrientEfficiency: 0,
+            waterEfficiency: 0
+        };
+        this.equipment.forEach(eq => {
+            const dist = Math.sqrt(Math.pow(eq.x - x, 2) + Math.pow(eq.y - y, 2));
+            const coverage = eq.specs.coverage || 2;
+            if (dist <= (radius === 999 ? coverage : radius) || coverage >= 999 || radius === 999) {
+                const env = eq.getEnvironmentalEffects();
+                const distanceModifier = coverage >= 999 || radius === 999 ? 1 : Math.max(0.3, 1 - (dist / coverage));
+                Object.keys(env).forEach(k => {
+                    if (typeof env[k] === 'number') {
+                        if (!effects[k]) effects[k] = 0;
+                        effects[k] += env[k] * distanceModifier;
+                    }
+                });
+            }
+        });
+        return effects;
+    }
     
     // Daily update for all equipment
     dailyUpdate(gameDay) {
@@ -545,6 +580,22 @@ class EquipmentManager {
                     isUnlocked: true
                 };
             });
+    }
+
+    // Wrapper methods expected by UI
+    maintainEquipment(equipment) {
+        if (!(equipment instanceof Equipment)) return { success: false, message: 'Invalid equipment' };
+        if (!equipment.maintenanceRequired && equipment.durability > 50) {
+            return { success: false, message: 'Maintenance not required' };
+        }
+        const result = equipment.performMaintenance(Math.floor(Date.now()/86400000));
+        return { success: result.success, message: result.message };
+    }
+
+    toggleEquipment(equipment) {
+        if (!(equipment instanceof Equipment)) return { success: false, message: 'Invalid equipment' };
+        const res = equipment.togglePower();
+        return { success: res.success, message: res.message };
     }
 }
 
