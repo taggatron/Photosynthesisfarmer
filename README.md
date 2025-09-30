@@ -160,4 +160,4 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 **🌿 Happy Farming! 🌿**
 
-*Build your cannabis empire from seed to harvest in this comprehensive farming simulation.*
+*Build your hemp empire from seed to harvest in this comprehensive farming simulation.*
