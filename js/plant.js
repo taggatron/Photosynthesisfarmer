@@ -174,17 +174,17 @@ class Plant {
         if (this.stressLevel < 20) {
             healthChange += 2; // Slowly recover in good conditions
         } else if (this.stressLevel > 60) {
-            healthChange -= 3; // Decline in bad conditions
+            healthChange -= 2; // Reduced decline in bad conditions
         }
         
         // Health affected by basic needs
         const requirements = this.stageRequirements[this.stage];
-        if (this.waterLevel < requirements.waterMin) healthChange -= 4;
-        if (this.nutrientLevel < requirements.nutrientMin) healthChange -= 2;
+        if (this.waterLevel < requirements.waterMin) healthChange -= 2; // was -4
+        if (this.nutrientLevel < requirements.nutrientMin) healthChange -= 1; // was -2
         
         // Random disease chance (modified by resistance)
         if (Math.random() < (0.002 * (1 - this.diseaseResistance))) {
-            healthChange -= 15;
+            healthChange -= 8; // was -15
         }
         
         this.health = Math.max(0, Math.min(100, this.health + healthChange));

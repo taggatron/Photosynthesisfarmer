@@ -77,7 +77,16 @@ class UIManager {
                 if (equipment) {
                     const equipmentElement = document.createElement('div');
                     equipmentElement.className = 'equipment-icon';
-                    equipmentElement.textContent = equipment.specs.icon;
+                    if (equipment.type === 'sprinkler') {
+                        const img = document.createElement('img');
+                        img.src = 'assets/svg/sprinkler.svg';
+                        img.alt = 'Sprinkler';
+                        img.style.width = '20px';
+                        img.style.height = '20px';
+                        equipmentElement.appendChild(img);
+                    } else {
+                        equipmentElement.textContent = equipment.specs.icon;
+                    }
                     equipmentElement.title = equipment.specs.name;
                     
                     const status = equipment.getStatus();

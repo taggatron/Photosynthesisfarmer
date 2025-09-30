@@ -202,6 +202,21 @@ class Equipment {
                 maintenanceInterval: 180,
                 icon: '⏰',
                 description: 'Automates equipment schedules for optimal efficiency'
+            },
+            'sprinkler': {
+                name: 'Irrigation Sprinkler',
+                cost: 120,
+                operatingCost: 4,
+                powerUsage: 30,
+                coverage: 6,
+                effects: {
+                    humidity: 8,
+                    waterEfficiency: 1.2
+                },
+                durability: 85,
+                maintenanceInterval: 25,
+                icon: '🚿',
+                description: 'Distributes water evenly, slightly increases humidity'
             }
         };
         
@@ -372,6 +387,7 @@ class EquipmentManager {
             { type: 'led_light', unlockLevel: 1 },
             { type: 'ventilation_fan', unlockLevel: 1 },
             { type: 'heater', unlockLevel: 2 },
+            { type: 'sprinkler', unlockLevel: 2 },
             { type: 'humidifier', unlockLevel: 2 },
             { type: 'hps_light', unlockLevel: 3 },
             { type: 'dehumidifier', unlockLevel: 3 },
