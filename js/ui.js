@@ -134,11 +134,12 @@ class UIManager {
                     <span class="equipment-icon">${item.icon}</span>
                     <span>${item.name}</span>
                 </div>
-                <div class="equipment-price">$${item.installationCost}</div>
+                <div class="equipment-price">£${item.installationCost}</div>
             `;
             
-            // Add drag functionality
-            equipmentItem.draggable = canAfford;
+            // Add drag functionality (disable on touch devices to prefer tap placement)
+            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            equipmentItem.draggable = canAfford && !isTouch;
             equipmentItem.dataset.equipmentType = item.type;
             
             if (canAfford) {
@@ -147,7 +148,7 @@ class UIManager {
             }
             
             // Add tooltip
-            equipmentItem.title = `${item.description}\nDaily cost: $${item.dailyOperatingCost}\nPower: ${item.powerUsage}W`;
+            equipmentItem.title = `${item.description}\nDaily cost: £${item.dailyOperatingCost}\nPower: ${item.powerUsage}W`;
             
             equipmentList.appendChild(equipmentItem);
         });
@@ -155,9 +156,9 @@ class UIManager {
     
     updateStats() {
         // Update financial stats
-        document.getElementById('cash').textContent = `$${this.game.cash.toLocaleString()}`;
+    document.getElementById('cash').textContent = `£${this.game.cash.toLocaleString()}`;
         document.getElementById('daily-profit').textContent = 
-            `${this.game.dailyProfit >= 0 ? '+' : ''}$${this.game.dailyProfit.toLocaleString()}`;
+            `${this.game.dailyProfit >= 0 ? '+' : ''}£${this.game.dailyProfit.toLocaleString()}`;
         document.getElementById('daily-profit').className = 
             `stat-value ${this.game.dailyProfit >= 0 ? 'profit' : 'loss'}`;
         
@@ -176,13 +177,13 @@ class UIManager {
         document.getElementById('co2-level').textContent = `${Math.round(avgEnvironment.co2Level)}ppm`;
         
         // Update financial breakdown
-        document.getElementById('total-revenue').textContent = `$${this.game.totalRevenue.toLocaleString()}`;
-        document.getElementById('electricity-cost').textContent = `-$${this.game.totalElectricityCost.toLocaleString()}`;
-        document.getElementById('equipment-cost').textContent = `-$${this.game.totalEquipmentCost.toLocaleString()}`;
-        document.getElementById('supplies-cost').textContent = `-$${this.game.totalSuppliesCost.toLocaleString()}`;
+    document.getElementById('total-revenue').textContent = `£${this.game.totalRevenue.toLocaleString()}`;
+    document.getElementById('electricity-cost').textContent = `-£${this.game.totalElectricityCost.toLocaleString()}`;
+    document.getElementById('equipment-cost').textContent = `-£${this.game.totalEquipmentCost.toLocaleString()}`;
+    document.getElementById('supplies-cost').textContent = `-£${this.game.totalSuppliesCost.toLocaleString()}`;
         
         const netProfit = this.game.totalRevenue - this.game.totalElectricityCost - this.game.totalEquipmentCost - this.game.totalSuppliesCost;
-        document.getElementById('net-profit').textContent = `$${netProfit.toLocaleString()}`;
+    document.getElementById('net-profit').textContent = `£${netProfit.toLocaleString()}`;
         document.getElementById('net-profit').className = netProfit >= 0 ? 'green' : 'red';
     }
     
@@ -201,7 +202,7 @@ class UIManager {
             <div class="plant-overview">
                 <h4>${plant.getDisplayEmoji()} ${details.stage.charAt(0).toUpperCase() + details.stage.slice(1)} Plant</h4>
                 <p>Age: ${details.age} days | Quality: ${details.quality}</p>
-                <p>Estimated Value: $${details.value}</p>
+                <p>Estimated Value: £${details.value}</p>
             </div>
             
             <div class="plant-stats">
@@ -281,7 +282,9 @@ class UIManager {
         document.getElementById('play-pause-btn').addEventListener('click', this.toggleGamePause.bind(this));
         document.getElementById('speed-btn').addEventListener('click', this.toggleGameSpeed.bind(this));
         document.getElementById('plant-seed-btn').addEventListener('click', this.enterPlantingMode.bind(this));
-        document.getElementById('harvest-all-btn').addEventListener('click', this.harvestAll.bind(this));
+    document.getElementById('harvest-all-btn').addEventListener('click', this.harvestAll.bind(this));
+    const cancelBtn = document.getElementById('cancel-mode-btn');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => this.cancelActiveMode());
         
         // Modal events
         document.querySelector('.close-btn').addEventListener('click', this.closeModal.bind(this));
@@ -303,6 +306,20 @@ class UIManager {
         const plant = this.game.getPlantAt(x, y);
         const equipment = this.game.equipmentManager.getEquipmentAt(x, y);
         
+        // If placing equipment via click
+        if (this.game.currentMode === 'placing_equipment' && !plant && !equipment && this.game.selectedEquipmentType) {
+            const placed = this.game.installEquipment(this.game.selectedEquipmentType, x, y);
+            if (placed) {
+                this.game.currentMode = 'normal';
+                this.game.selectedEquipmentType = null;
+                document.querySelectorAll('.equipment-item.selected').forEach(el => el.classList.remove('selected'));
+                this.updateEquipmentShop();
+                this.updateStats();
+                this.hideCancelButtonIfNoMode();
+            }
+            return;
+        }
+
         if (this.game.currentMode === 'planting' && !plant && !equipment) {
             // Plant a seed
             this.game.plantSeed(x, y);
@@ -364,27 +381,33 @@ class UIManager {
         this.game.currentMode = 'planting';
         document.getElementById('plant-seed-btn').textContent = '🌱 Planting Mode (ESC to exit)';
         document.getElementById('plant-seed-btn').style.background = '#ff9800';
+        this.showCancelButton();
     }
     
     exitPlantingMode() {
         this.game.currentMode = 'normal';
-        document.getElementById('plant-seed-btn').textContent = '🌱 Plant Seed ($50)';
+    document.getElementById('plant-seed-btn').textContent = '🌱 Plant Seed (£50)';
         document.getElementById('plant-seed-btn').style.background = '';
+        this.hideCancelButtonIfNoMode();
     }
     
     harvestAll() {
         const harvested = this.game.harvestAllReady();
         if (harvested.count > 0) {
-            this.showNotification(`Harvested ${harvested.count} plants for $${harvested.totalValue}`, 'success');
+            this.showNotification(`Harvested ${harvested.count} plants for £${harvested.totalValue}`, 'success');
         } else {
             this.showNotification('No plants ready for harvest', 'info');
         }
     }
     
     selectEquipmentForPlacement(equipmentType) {
-        this.game.currentMode = 'placing_equipment';
-        this.game.selectedEquipmentType = equipmentType;
-        this.showNotification('Click on an empty slot to place equipment', 'info');
+    this.game.currentMode = 'placing_equipment';
+    this.game.selectedEquipmentType = equipmentType;
+    document.querySelectorAll('.equipment-item.selected').forEach(el => el.classList.remove('selected'));
+    const selected = document.querySelector(`.equipment-item[data-equipment-type="${equipmentType}"]`);
+    if (selected) selected.classList.add('selected');
+    this.showNotification('Click on an empty slot to place equipment (ESC to cancel)', 'info');
+    this.showCancelButton();
     }
     
     showPlantModal(plant) {
@@ -399,7 +422,7 @@ class UIManager {
             <p><strong>Health:</strong> ${details.health}%</p>
             <p><strong>Water Level:</strong> ${details.water}%</p>
             <p><strong>Nutrient Level:</strong> ${details.nutrients}%</p>
-            <p><strong>Current Value:</strong> $${details.value}</p>
+            <p><strong>Current Value:</strong> £${details.value}</p>
             <p><strong>Quality:</strong> ${details.quality}</p>
         `;
         
@@ -426,7 +449,7 @@ class UIManager {
             <p><strong>Coverage:</strong> ${details.coverage}</p>
             <p><strong>Durability:</strong> ${details.durability}%</p>
             <p><strong>Status:</strong> ${details.isActive ? 'Active' : 'Inactive'}</p>
-            <p><strong>Daily Cost:</strong> $${details.dailyOperatingCost}</p>
+            <p><strong>Daily Cost:</strong> £${details.dailyOperatingCost}</p>
             <p><strong>Power Usage:</strong> ${details.powerUsage}W</p>
             <p><strong>Effects:</strong></p>
             <ul style="margin-left:15px;">${effectEntries.map(e => `<li>${e}</li>`).join('') || '<li>None</li>'}</ul>
@@ -520,6 +543,12 @@ class UIManager {
             case 'Escape':
                 if (this.game.currentMode === 'planting') {
                     this.exitPlantingMode();
+                } else if (this.game.currentMode === 'placing_equipment') {
+                    this.game.currentMode = 'normal';
+                    this.game.selectedEquipmentType = null;
+                    document.querySelectorAll('.equipment-item.selected').forEach(el => el.classList.remove('selected'));
+                    this.showNotification('Equipment placement cancelled', 'info');
+                    this.hideCancelButtonIfNoMode();
                 } else {
                     this.closeModal();
                 }
@@ -596,6 +625,29 @@ class UIManager {
         if (!this.lastEquipmentUpdate || Date.now() - this.lastEquipmentUpdate > 5000) {
             this.updateEquipmentShop();
             this.lastEquipmentUpdate = Date.now();
+        }
+    }
+
+    // --- Mobile / Mode Helper Methods ---
+    showCancelButton() {
+        const btn = document.getElementById('cancel-mode-btn');
+        if (btn) btn.style.display = 'inline-block';
+    }
+    hideCancelButtonIfNoMode() {
+        if (this.game.currentMode === 'normal') {
+            const btn = document.getElementById('cancel-mode-btn');
+            if (btn) btn.style.display = 'none';
+        }
+    }
+    cancelActiveMode() {
+        if (this.game.currentMode === 'planting') {
+            this.exitPlantingMode();
+        } else if (this.game.currentMode === 'placing_equipment') {
+            this.game.currentMode = 'normal';
+            this.game.selectedEquipmentType = null;
+            document.querySelectorAll('.equipment-item.selected').forEach(el => el.classList.remove('selected'));
+            this.showNotification('Equipment placement cancelled', 'info');
+            this.hideCancelButtonIfNoMode();
         }
     }
 }
