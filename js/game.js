@@ -198,6 +198,14 @@ class THCFarmerGame {
             const localEnvironment = this.applyEnvironmentalEffects(environment, localEffects);
             
             plant.update(localEnvironment, this.gameDay);
+
+            // Apply passive watering from sprinklers (waterRegen effect)
+            if (typeof localEffects.waterRegen === 'number' && localEffects.waterRegen > 0) {
+                // Scale regeneration slightly with plant stress (more stressed plants benefit a bit more)
+                const stressModifier = 1 + (plant.stressLevel / 200); // up to +50%
+                const regen = localEffects.waterRegen * stressModifier;
+                plant.waterLevel = Math.min(100, plant.waterLevel + regen);
+            }
             
             // Remove dead plants after a delay
             if (plant.isDead && Math.random() < 0.1) {

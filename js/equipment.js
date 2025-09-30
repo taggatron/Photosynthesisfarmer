@@ -211,7 +211,8 @@ class Equipment {
                 coverage: 6,
                 effects: {
                     humidity: 8,
-                    waterEfficiency: 1.2
+                    waterEfficiency: 1.2,
+                    waterRegen: 5
                 },
                 durability: 85,
                 maintenanceInterval: 25,
@@ -503,7 +504,8 @@ class EquipmentManager {
             humidity: 0,
             co2Level: 0,
             nutrientEfficiency: 0,
-            waterEfficiency: 0
+            waterEfficiency: 0,
+            waterRegen: 0
         };
         this.equipment.forEach(eq => {
             const dist = Math.sqrt(Math.pow(eq.x - x, 2) + Math.pow(eq.y - y, 2));
