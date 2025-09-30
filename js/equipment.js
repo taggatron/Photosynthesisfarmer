@@ -388,7 +388,7 @@ class EquipmentManager {
             { type: 'led_light', unlockLevel: 1 },
             { type: 'ventilation_fan', unlockLevel: 1 },
             { type: 'heater', unlockLevel: 2 },
-            { type: 'sprinkler', unlockLevel: 2 },
+            { type: 'sprinkler', unlockLevel: 1 },
             { type: 'humidifier', unlockLevel: 2 },
             { type: 'hps_light', unlockLevel: 3 },
             { type: 'dehumidifier', unlockLevel: 3 },

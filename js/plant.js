@@ -31,11 +31,12 @@ class Plant {
         
         // Growth stage requirements
         this.stageRequirements = {
-            'seed': { days: 1, waterMin: 70, nutrientMin: 20 },
-            'seedling': { days: 7, waterMin: 60, nutrientMin: 30 },
-            'young': { days: 14, waterMin: 50, nutrientMin: 40 },
-            'mature': { days: 21, waterMin: 45, nutrientMin: 60 },
-            'flowering': { days: 28, waterMin: 40, nutrientMin: 80 },
+            // Balance tweak (2025-09-30): shortened durations to make harvest easier/faster
+            'seed': { days: 0.6, waterMin: 65, nutrientMin: 15 },
+            'seedling': { days: 5, waterMin: 55, nutrientMin: 30 },
+            'young': { days: 10, waterMin: 50, nutrientMin: 40 },
+            'mature': { days: 14, waterMin: 45, nutrientMin: 55 },
+            'flowering': { days: 18, waterMin: 40, nutrientMin: 75 },
             'ready': { days: Infinity, waterMin: 0, nutrientMin: 0 }
         };
         
@@ -148,10 +149,10 @@ class Plant {
         let growthRate = 1;
         
         // Positive factors
-        if (this.waterLevel > requirements.waterMin) growthRate += 0.5;
-        if (this.nutrientLevel > requirements.nutrientMin) growthRate += 0.5;
-        if (this.stressLevel < 20) growthRate += 0.3;
-        if (this.health > 80) growthRate += 0.2;
+    if (this.waterLevel > requirements.waterMin) growthRate += 0.6; // was 0.5
+    if (this.nutrientLevel > requirements.nutrientMin) growthRate += 0.6; // was 0.5
+    if (this.stressLevel < 20) growthRate += 0.35; // was 0.3
+    if (this.health > 80) growthRate += 0.25; // was 0.2
         
         // Negative factors
         if (this.stressLevel > 50) growthRate -= 0.4;
@@ -159,7 +160,8 @@ class Plant {
         if (this.waterLevel < requirements.waterMin * 0.5) growthRate -= 0.5;
         if (this.nutrientLevel < requirements.nutrientMin * 0.5) growthRate -= 0.3;
         
-        growthRate = Math.max(0.1, growthRate);
+    // Ensure a higher floor so stalled plants still progress
+    growthRate = Math.max(0.2, growthRate); // was 0.1
         
         // Update growth progress
         const dailyGrowthTarget = 100 / requirements.days;

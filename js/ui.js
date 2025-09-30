@@ -525,6 +525,14 @@ class UIManager {
             }
             
             this.updatePlantDetails(this.selectedPlant);
+            // Also refresh the modal contents so the user instantly sees new water/nutrient levels
+            if (action !== 'harvest') { // harvest closes modal below
+                const plantModal = document.getElementById('plant-modal');
+                if (plantModal && !plantModal.classList.contains('hidden')) {
+                    // Re-render modal details with up-to-date stats
+                    this.showPlantModal(this.selectedPlant);
+                }
+            }
             this.updateStats();
         }
         

@@ -1,6 +1,6 @@
 # 🌿 Hemp Farmer - Virtual Hemp Farm Simulator
 
-A comprehensive web-based cannabis farming simulation game where players manage their own virtual cannabis farm, balancing plant care, equipment, and finances to build a profitable operation.
+A comprehensive web-based hemp farming simulation game where players manage their own virtual cannabis farm, balancing plant care, equipment, and finances to build a profitable operation.
 
 ## 🎮 Game Features
 
